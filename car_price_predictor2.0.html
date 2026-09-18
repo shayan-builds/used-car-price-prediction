@@ -1,0 +1,2836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Used Car Valuation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14161a;
+    --panel: #1b1e23;
+    --panel-raised: #22262c;
+    --line: #33373d;
+    --text: #e8e6e1;
+    --text-dim: #8b8f96;
+    --amber: #f2a93b;
+    --amber-dim: #7a5a24;
+    --green: #4fb286;
+    --red: #d9645c;
+    --focus: #f2a93b;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.5;
+  }
+
+  :focus { outline: none; }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    z-index: 20;
+    background: var(--amber);
+    color: #1a1300;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 12px;
+    outline: none;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .header-copy h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .header-copy p {
+    margin: 6px 0 0;
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 62ch;
+  }
+
+  .header-badge {
+    flex-shrink: 0;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    background: rgba(242, 169, 59, 0.08);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) 1fr;
+    gap: 1px;
+    background: var(--line);
+    min-height: calc(100vh - 92px);
+  }
+
+  @media (max-width: 860px) {
+    header { padding: 20px 20px 18px; flex-wrap: wrap; }
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--bg);
+    padding: 28px 32px 40px;
+  }
+
+  .results-panel {
+    padding: 40px 48px;
+    background: var(--bg);
+  }
+
+  @media (max-width: 860px) {
+    .panel { padding: 22px 20px 32px; }
+    .results-panel { padding: 32px 24px; }
+  }
+
+  .panel-kicker {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .panel-heading {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .results-panel .panel-heading {
+    font-size: 24px;
+    margin-bottom: 28px;
+  }
+
+  .field-group {
+    display: grid;
+    gap: 16px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .field-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  .field select,
+  .field input[type="number"],
+  .field input[type="text"],
+  .field input[type="range"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 14px;
+    width: 100%;
+    min-height: 42px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  }
+
+  .field select:hover,
+  .field input:hover {
+    border-color: #454a52;
+    transform: translateY(-1px);
+  }
+
+  .field input:focus-visible,
+  .field select:focus-visible {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(242, 169, 59, 0.18);
+    transform: translateY(-2px);
+  }
+
+  .field input[type="range"] {
+    padding: 0;
+    height: 8px;
+    min-height: 8px;
+    background: var(--panel-raised);
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .field input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--amber);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(242, 169, 59, 0.3);
+  }
+
+  .field input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--amber);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(242, 169, 59, 0.3);
+  }
+
+  .range-value {
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 600;
+    margin-top: 4px;
+    transition: color 0.2s ease;
+  }
+
+  .validation-message {
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 4px;
+    min-height: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .validation-message.visible {
+    opacity: 1;
+  }
+
+  .auto-filled {
+    position: relative;
+  }
+
+  .auto-filled .range-value {
+    transition: color 0.3s ease;
+  }
+
+  .auto-filled.auto-filled-active .range-value {
+    color: var(--green);
+  }
+
+  .editable-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-style: italic;
+    transition: color 0.3s ease;
+  }
+
+  .auto-filled.auto-filled-active .editable-hint {
+    color: var(--green);
+  }
+
+  .field-group {
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .field {
+    position: relative;
+  }
+
+  .field-tooltip {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--text-dim);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    transition: all 0.2s ease;
+  }
+
+  .field-tooltip:hover {
+    background: var(--amber);
+    color: #1a1300;
+    border-color: var(--amber);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+    margin-bottom: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+
+  .field-tooltip:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .was-submitted .field input:invalid,
+  .was-submitted .field select:invalid {
+    border-color: var(--red);
+  }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 420px) {
+    .row-2 { grid-template-columns: 1fr; }
+  }
+
+  button#evaluate {
+    margin-top: 22px;
+    width: 100%;
+    padding: 13px;
+    background: var(--amber);
+    color: #1a1300;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  button#evaluate::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+  }
+
+  button#evaluate:hover:not(:disabled)::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  button#evaluate:hover:not(:disabled) {
+    background: #f7bb5e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(242, 169, 59, 0.3);
+  }
+
+  button#evaluate:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(242, 169, 59, 0.2);
+  }
+
+  button#evaluate:disabled {
+    background: var(--amber-dim);
+    cursor: not-allowed;
+    color: #c8c4bb;
+    transform: none;
+    box-shadow: none;
+  }
+
+  button#evaluate:disabled::before {
+    display: none;
+  }
+
+  .results-panel {
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .results-empty,
+  .results-loading,
+  .error-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .empty-icon,
+  .error-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    display: grid;
+    place-items: center;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+  }
+
+  .error-icon {
+    color: var(--red);
+    background: rgba(217, 100, 92, 0.08);
+    border-color: rgba(217, 100, 92, 0.35);
+  }
+
+  .results-empty h2,
+  .error-box h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .results-empty p,
+  .error-box p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .empty-list {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0 0;
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .empty-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-dim);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--amber);
+    flex-shrink: 0;
+  }
+
+  .error-box {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    max-width: 460px;
+  }
+
+  .error-detail {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+    word-break: break-word;
+  }
+
+  .retry-btn {
+    margin-top: 18px;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .retry-btn:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .comparison-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .comparison-toggle label {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .comparison-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--amber);
+  }
+
+  .comparison-mode .form-panel {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .comparison-mode .form-panel > div {
+    background: var(--bg);
+    padding: 28px 32px 40px;
+  }
+
+  .comparison-mode .panel-kicker {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .car-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--amber);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .comparison-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .comparison-results > div {
+    background: var(--bg);
+    padding: 28px 32px 40px;
+  }
+
+  .comparison-summary {
+    grid-column: 1 / -1;
+    background: var(--panel);
+    padding: 32px;
+    border-radius: var(--radius);
+    margin-top: 32px;
+    border: 1px solid var(--line);
+  }
+
+  .winner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79, 178, 134, 0.15);
+    color: var(--green);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .recommendation {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .recommendation-reason {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .comparison-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+
+  .comparison-metric:last-child {
+    border-bottom: none;
+  }
+
+  .comparison-metric .label {
+    color: var(--text-dim);
+  }
+
+  .comparison-metric .value {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .comparison-metric .better {
+    color: var(--green);
+  }
+
+  .comparison-metric .worse {
+    color: var(--red);
+  }
+
+  @media (max-width: 860px) {
+    .comparison-mode .form-panel {
+      grid-template-columns: 1fr;
+    }
+    .comparison-results {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .skeleton {
+    width: 100%;
+    max-width: 720px;
+    display: grid;
+    gap: 18px;
+    text-align: left;
+  }
+
+  .skel {
+    background: linear-gradient(90deg, var(--panel) 0%, var(--panel-raised) 50%, var(--panel) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s ease-in-out infinite;
+    border-radius: var(--radius);
+  }
+
+  .skel-row { height: 72px; }
+  .skel-gauge { height: 120px; }
+  .skel-bar { height: 48px; }
+  .skel-chart { height: 180px; }
+
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  .range-block { margin-bottom: 36px; }
+
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .range-labels .lower { color: var(--red); transition: color 0.3s ease; }
+  .range-labels .upper { color: var(--green); transition: color 0.3s ease; }
+  .range-labels span { min-width: 0; }
+  
+  .range-block:hover .range-labels .lower { color: #ff6b6b; }
+  .range-block:hover .range-labels .upper { color: #6bff9b; }
+
+  .range-bar {
+    position: relative;
+    height: 10px;
+    background: var(--panel-raised);
+    border-radius: 999px;
+    overflow: visible;
+    transition: height 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .range-bar:hover {
+    height: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .range-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--red), var(--amber), var(--green));
+    border-radius: 999px;
+    transition: opacity 0.3s ease;
+  }
+  
+  .range-bar:hover .range-fill {
+    opacity: 0.9;
+  }
+
+  .range-marker {
+    position: absolute;
+    top: -5px;
+    width: 3px;
+    height: 20px;
+    background: var(--text);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 0 3px var(--bg);
+    transition: transform 0.3s ease, background 0.3s ease, height 0.3s ease;
+  }
+  
+  .range-bar:hover .range-marker {
+    height: 24px;
+    background: var(--amber);
+    transform: translateX(-50%) scale(1.1);
+  }
+
+  .section-title {
+    font-size: 15px;
+    color: var(--text-dim);
+    margin: 0 0 18px;
+    font-weight: 500;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+  }
+
+  @media (max-width: 1180px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  canvas { width: 100%; display: block; cursor: crosshair; }
+
+  .chart-wrap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 8px 8px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .chart-wrap:hover {
+    border-color: var(--amber);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .chart-tooltip {
+    position: absolute;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--text);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .chart-tooltip.visible {
+    opacity: 1;
+  }
+
+  .importance-row {
+    display: grid;
+    grid-template-columns: minmax(72px, 110px) 1fr 44px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    transition: transform 0.2s ease, background 0.2s ease;
+    padding: 8px;
+    border-radius: var(--radius);
+    cursor: default;
+  }
+
+  .importance-row:hover {
+    transform: translateX(4px);
+    background: var(--panel);
+  }
+
+  .importance-name { color: var(--text); transition: color 0.2s ease; }
+  .importance-row:hover .importance-name { color: var(--amber); }
+
+  .importance-track {
+    height: 8px;
+    background: var(--panel-raised);
+    border-radius: 999px;
+    overflow: hidden;
+    transition: height 0.2s ease;
+  }
+
+  .importance-row:hover .importance-track {
+    height: 10px;
+  }
+
+  .importance-fill {
+    height: 100%;
+    width: 0;
+    background: var(--amber);
+    border-radius: 999px;
+    transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
+  }
+
+  .importance-row:hover .importance-fill {
+    background: #f7bb5e;
+  }
+
+  .importance-pct { 
+    text-align: right; 
+    color: var(--text-dim); 
+    transition: color 0.2s ease, font-weight 0.2s ease;
+  }
+  
+  .importance-row:hover .importance-pct {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .photo-drop {
+    position: relative;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .photo-drop:hover,
+  .photo-drop.dragover,
+  .photo-drop:focus-within {
+    border-color: var(--amber);
+    background: #201c14;
+  }
+
+  .photo-drop img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: none;
+  }
+
+  .photo-drop.has-photo img { display: block; }
+  .photo-drop.has-photo .photo-drop-label { display: none; }
+
+  .photo-drop-label {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    padding: 16px;
+    pointer-events: none;
+  }
+
+  .photo-drop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .photo-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(20, 22, 26, 0.85);
+    border: 1px solid var(--line);
+    color: var(--text);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+    display: none;
+  }
+
+  .photo-drop.has-photo .photo-remove { display: grid; place-items: center; }
+
+  .car-profile {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 24px;
+    align-items: center;
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .car-profile:hover {
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 720px) {
+    .car-profile {
+      grid-template-columns: 120px 1fr;
+    }
+    .car-profile .report-actions {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .car-profile-photo {
+    width: 120px;
+    height: 90px;
+    border-radius: 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .car-profile:hover .car-profile-photo {
+    transform: scale(1.05);
+    border-color: var(--amber);
+  }
+
+  .car-profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .car-profile-photo svg { width: 56px; height: 56px; color: var(--text-dim); transition: color 0.3s ease; }
+  
+  .car-profile:hover .car-profile-photo svg {
+    color: var(--amber);
+  }
+
+  .car-profile-title { 
+    font-size: 20px; 
+    font-weight: 600; 
+    transition: color 0.3s ease;
+  }
+  
+  .car-profile:hover .car-profile-title {
+    color: var(--amber);
+  }
+  
+  .car-profile-specs { 
+    color: var(--text-dim); 
+    font-size: 14px; 
+    margin-top: 6px; 
+    transition: color 0.3s ease;
+  }
+  
+  .car-profile:hover .car-profile-specs {
+    color: var(--text);
+  }
+
+  .report-actions { display: flex; justify-content: flex-end; }
+
+  #download-report {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 40px;
+  }
+
+  #download-report:hover { border-color: var(--amber); color: var(--amber); }
+
+  .gauge-wrap {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 32px;
+    align-items: center;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 640px) {
+    .gauge-wrap { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  }
+
+  .gauge-svg { width: 100%; max-width: 380px; height: auto; overflow: visible; }
+  .gauge-needle { transform-origin: 100px 105px; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .gauge-fill { transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+
+  .gauge-value {
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .gauge-value:hover {
+    transform: scale(1.05);
+    color: #f7bb5e;
+  }
+
+  .gauge-label { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+  .gauge-note { margin: 8px 0 0; font-size: 13px; color: var(--text-dim); }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 10px;
+  }
+
+  .data-table th,
+  .data-table td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  details.chart-data {
+    margin-top: 8px;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  details.chart-data summary {
+    cursor: pointer;
+    color: var(--text-dim);
+  }
+
+  details.chart-data summary:hover { color: var(--text); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  @media print {
+    .skip-link, header p, .header-badge, .form-panel, #download-report, details.chart-data { display: none !important; }
+    body { background: #fff; color: #14161a; }
+    .layout { grid-template-columns: 1fr; background: #fff; }
+    .panel { padding: 0; }
+    .gauge-value { color: #b5761f !important; }
+    .car-profile, .gauge-wrap, .range-block { border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#results">Skip to valuation</a>
+
+<header>
+  <div class="header-copy">
+    <h1>Used Car Valuation</h1>
+    <p>Enter a car's details to get an estimated market value, a realistic price range, and how its value falls off over the next ten years.</p>
+  </div>
+  <div class="header-badge">India · INR</div>
+</header>
+
+<p id="live-status" class="visually-hidden" role="status" aria-live="polite"></p>
+
+<div class="layout">
+
+  <div class="panel form-panel">
+    <div class="comparison-toggle">
+      <label>
+        <input type="checkbox" id="comparison-mode">
+        Compare two cars
+      </label>
+    </div>
+    <p class="panel-kicker">Inputs</p>
+    <h2 class="panel-heading">Vehicle details</h2>
+    <form id="car-form" novalidate>
+      <div id="car1-fields">
+        <div class="car-label">Car 1</div>
+        <div class="field-group">
+
+        <div class="field">
+          <label for="photo-input">Car photo <span>(optional)</span></label>
+          <div class="photo-drop" id="photo-drop">
+            <span class="photo-drop-label" id="photo-drop-label">Click or drop a photo — it appears on the report</span>
+            <img id="photo-preview" alt="Uploaded car">
+            <button type="button" class="photo-remove" id="photo-remove" aria-label="Remove photo" hidden>×</button>
+            <input type="file" id="photo-input" accept="image/*">
+          </div>
+          <p class="field-hint" id="photo-hint">JPG, PNG, or WebP. Used only in this browser for the report.</p>
+        </div>
+
+        <div class="field">
+          <label for="brand">Brand <span class="auto-fill-hint" style="color: var(--amber); font-size: 10px;">(required)</span></label>
+          <select id="brand" name="brand" required>
+            <option value="">Select brand</option>
+            <option value="Maruti">Maruti</option>
+            <option value="Hyundai">Hyundai</option>
+            <option value="Honda">Honda</option>
+            <option value="Toyota">Toyota</option>
+            <option value="Mahindra">Mahindra</option>
+            <option value="Tata">Tata</option>
+            <option value="Ford">Ford</option>
+            <option value="Renault">Renault</option>
+            <option value="Volkswagen">Volkswagen</option>
+            <option value="Skoda">Skoda</option>
+            <option value="Nissan">Nissan</option>
+            <option value="Datsun">Datsun</option>
+            <option value="Chevrolet">Chevrolet</option>
+            <option value="BMW">BMW</option>
+            <option value="Mercedes-Benz">Mercedes-Benz</option>
+            <option value="Audi">Audi</option>
+            <option value="Land Rover">Land Rover</option>
+            <option value="Jaguar">Jaguar</option>
+            <option value="Volvo">Volvo</option>
+            <option value="Kia">Kia</option>
+            <option value="MG">MG</option>
+            <option value="Jeep">Jeep</option>
+            <option value="Fiat">Fiat</option>
+            <option value="Mitsubishi">Mitsubishi</option>
+            <option value="Isuzu">Isuzu</option>
+            <option value="Lexus">Lexus</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="model">Model <span class="auto-fill-hint" style="color: var(--amber); font-size: 10px;">(auto-fills specs)</span></label>
+          <select id="model" name="model" required disabled>
+            <option value="">Select brand first</option>
+          </select>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="vehicle_age">Vehicle age (years)</label>
+            <input type="range" id="vehicle_age" name="vehicle_age" min="0" max="30" value="5" required>
+            <div class="range-value" id="vehicle_age_value">5 years</div>
+            <div class="validation-message" id="vehicle_age_validation"></div>
+          </div>
+          <div class="field">
+            <label for="km_driven">Km driven</label>
+            <input type="range" id="km_driven" name="km_driven" min="0" max="200000" step="1000" value="40000" required>
+            <div class="range-value" id="km_driven_value">40,000 km</div>
+            <div class="validation-message" id="km_driven_validation"></div>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field auto-filled" id="mileage_field">
+            <label for="mileage">Mileage (km/l)</label>
+            <input type="range" id="mileage" name="mileage" min="5" max="35" step="0.5" value="19.5" required>
+            <div class="range-value" id="mileage_value">19.5 km/l</div>
+            <div class="editable-hint">Auto-filled from model</div>
+            <div class="validation-message" id="mileage_validation"></div>
+          </div>
+          <div class="field auto-filled" id="engine_field">
+            <label for="engine">Engine (cc)</label>
+            <input type="range" id="engine" name="engine" min="600" max="5000" step="100" value="1200" required>
+            <div class="range-value" id="engine_value">1200 cc</div>
+            <div class="editable-hint">Auto-filled from model</div>
+            <div class="validation-message" id="engine_validation"></div>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field auto-filled" id="max_power_field">
+            <label for="max_power">Max power (bhp)</label>
+            <input type="range" id="max_power" name="max_power" min="40" max="300" step="5" value="85" required>
+            <div class="range-value" id="max_power_value">85 bhp</div>
+            <div class="editable-hint">Auto-filled from model</div>
+            <div class="validation-message" id="max_power_validation"></div>
+          </div>
+          <div class="field auto-filled" id="seats_field">
+            <label for="seats">Seats</label>
+            <input type="range" id="seats" name="seats" min="2" max="10" step="1" value="5" required>
+            <div class="range-value" id="seats_value">5 seats</div>
+            <div class="editable-hint">Auto-filled from model</div>
+            <div class="validation-message" id="seats_validation"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fuel_type">Fuel type</label>
+          <select id="fuel_type" name="fuel_type" required>
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="CNG">CNG</option>
+            <option value="LPG">LPG</option>
+            <option value="Electric">Electric</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="seller_type">Seller type</label>
+          <select id="seller_type" name="seller_type" required>
+            <option value="Individual">Individual</option>
+            <option value="Dealer">Dealer</option>
+            <option value="Trustmark Dealer">Trustmark Dealer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="transmission_type">Transmission</label>
+          <select id="transmission_type" name="transmission_type" required>
+            <option value="Manual">Manual</option>
+            <option value="Automatic">Automatic</option>
+          </select>
+        </div>
+
+      </div>
+      </div>
+
+      <div id="car2-fields" style="display: none;">
+        <div class="car-label">Car 2</div>
+        <div class="field-group">
+          <div class="field">
+            <label for="brand2">Brand <span class="auto-fill-hint" style="color: var(--amber); font-size: 10px;">(required)</span></label>
+            <select id="brand2" name="brand2">
+              <option value="">Select brand</option>
+              <option value="Maruti">Maruti</option>
+              <option value="Hyundai">Hyundai</option>
+              <option value="Honda">Honda</option>
+              <option value="Toyota">Toyota</option>
+              <option value="Mahindra">Mahindra</option>
+              <option value="Tata">Tata</option>
+              <option value="Ford">Ford</option>
+              <option value="Renault">Renault</option>
+              <option value="Volkswagen">Volkswagen</option>
+              <option value="Skoda">Skoda</option>
+              <option value="Nissan">Nissan</option>
+              <option value="Datsun">Datsun</option>
+              <option value="Chevrolet">Chevrolet</option>
+              <option value="BMW">BMW</option>
+              <option value="Mercedes-Benz">Mercedes-Benz</option>
+              <option value="Audi">Audi</option>
+              <option value="Land Rover">Land Rover</option>
+              <option value="Jaguar">Jaguar</option>
+              <option value="Volvo">Volvo</option>
+              <option value="Kia">Kia</option>
+              <option value="MG">MG</option>
+              <option value="Jeep">Jeep</option>
+              <option value="Fiat">Fiat</option>
+              <option value="Mitsubishi">Mitsubishi</option>
+              <option value="Isuzu">Isuzu</option>
+              <option value="Lexus">Lexus</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="model2">Model <span class="auto-fill-hint" style="color: var(--amber); font-size: 10px;">(auto-fills specs)</span></label>
+            <select id="model2" name="model2" disabled>
+              <option value="">Select brand first</option>
+            </select>
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label for="vehicle_age2">Vehicle age (years)</label>
+              <input type="range" id="vehicle_age2" name="vehicle_age2" min="0" max="30" value="5">
+              <div class="range-value" id="vehicle_age2_value">5 years</div>
+              <div class="validation-message" id="vehicle_age2_validation"></div>
+            </div>
+            <div class="field">
+              <label for="km_driven2">Km driven</label>
+              <input type="range" id="km_driven2" name="km_driven2" min="0" max="200000" step="1000" value="40000">
+              <div class="range-value" id="km_driven2_value">40,000 km</div>
+              <div class="validation-message" id="km_driven2_validation"></div>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="field auto-filled" id="mileage_field2">
+              <label for="mileage2">Mileage (km/l)</label>
+              <input type="range" id="mileage2" name="mileage2" min="5" max="35" step="0.5" value="19.5">
+              <div class="range-value" id="mileage2_value">19.5 km/l</div>
+              <div class="editable-hint">Auto-filled from model</div>
+              <div class="validation-message" id="mileage2_validation"></div>
+            </div>
+            <div class="field auto-filled" id="engine_field2">
+              <label for="engine2">Engine (cc)</label>
+              <input type="range" id="engine2" name="engine2" min="600" max="5000" step="100" value="1200">
+              <div class="range-value" id="engine2_value">1200 cc</div>
+              <div class="editable-hint">Auto-filled from model</div>
+              <div class="validation-message" id="engine2_validation"></div>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="field auto-filled" id="max_power_field2">
+              <label for="max_power2">Max power (bhp)</label>
+              <input type="range" id="max_power2" name="max_power2" min="40" max="300" step="5" value="85">
+              <div class="range-value" id="max_power2_value">85 bhp</div>
+              <div class="editable-hint">Auto-filled from model</div>
+              <div class="validation-message" id="max_power2_validation"></div>
+            </div>
+            <div class="field auto-filled" id="seats_field2">
+              <label for="seats2">Seats</label>
+              <input type="range" id="seats2" name="seats2" min="2" max="10" step="1" value="5">
+              <div class="range-value" id="seats2_value">5 seats</div>
+              <div class="editable-hint">Auto-filled from model</div>
+              <div class="validation-message" id="seats2_validation"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fuel_type2">Fuel type</label>
+            <select id="fuel_type2" name="fuel_type2">
+              <option value="Petrol">Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="CNG">CNG</option>
+              <option value="LPG">LPG</option>
+              <option value="Electric">Electric</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="seller_type2">Seller type</label>
+            <select id="seller_type2" name="seller_type2">
+              <option value="Individual">Individual</option>
+              <option value="Dealer">Dealer</option>
+              <option value="Trustmark Dealer">Trustmark Dealer</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="transmission_type2">Transmission</label>
+            <select id="transmission_type2" name="transmission_type2">
+              <option value="Manual">Manual</option>
+              <option value="Automatic">Automatic</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" id="evaluate">Evaluate this car</button>
+    </form>
+  </div>
+
+  <section class="panel results-panel" id="results" aria-labelledby="results-heading">
+    <div class="results-empty">
+      <div class="empty-icon" aria-hidden="true">
+        <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
+          <path d="M6 40h4l4-10a4 4 0 0 1 3.6-2.3h28.8A4 4 0 0 1 50 30l4 10h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4a6 6 0 0 1-12 0H22a6 6 0 0 1-12 0H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="16" cy="48" r="3" stroke="currentColor" stroke-width="2"/>
+          <circle cx="46" cy="48" r="3" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <h2 id="results-heading">No valuation yet</h2>
+      <p>Fill in the car on the left and press <strong>Evaluate this car</strong>. You'll get a market estimate plus the context around it.</p>
+      <ul class="empty-list">
+        <li><span class="dot"></span> Estimated market value</li>
+        <li><span class="dot"></span> Likely low–high price range</li>
+        <li><span class="dot"></span> 10-year depreciation curve</li>
+        <li><span class="dot"></span> What most influences the price</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:5000";
+
+const form = document.getElementById('car-form');
+const resultsEl = document.getElementById('results');
+const evaluateBtn = document.getElementById('evaluate');
+const liveStatus = document.getElementById('live-status');
+
+const photoDrop = document.getElementById('photo-drop');
+const photoInput = document.getElementById('photo-input');
+const photoPreview = document.getElementById('photo-preview');
+const photoRemove = document.getElementById('photo-remove');
+let currentPhotoDataUrl = null;
+
+function setStatus(message) {
+  liveStatus.textContent = message;
+}
+
+// Interactive slider functionality
+function setupSlider(sliderId, valueId, suffix = '', formatter = null) {
+  const slider = document.getElementById(sliderId);
+  const valueDisplay = document.getElementById(valueId);
+  const validation = document.getElementById(sliderId + '_validation');
+
+  function updateValue() {
+    const value = parseFloat(slider.value);
+    const displayValue = formatter ? formatter(value) : value.toLocaleString('en-IN');
+    valueDisplay.textContent = displayValue + suffix;
+    validateField(slider, validation);
+  }
+
+  slider.addEventListener('input', updateValue);
+  slider.addEventListener('change', updateValue);
+  
+  // Initial value display
+  updateValue();
+}
+
+function validateField(field, validationElement) {
+  const value = parseFloat(field.value);
+  const min = parseFloat(field.min);
+  const max = parseFloat(field.max);
+  let message = '';
+
+  if (value < min) {
+    message = `Minimum value is ${min}`;
+  } else if (value > max) {
+    message = `Maximum value is ${max}`;
+  }
+
+  if (message) {
+    validationElement.textContent = message;
+    validationElement.classList.add('visible');
+    field.style.borderColor = 'var(--red)';
+  } else {
+    validationElement.classList.remove('visible');
+    field.style.borderColor = '';
+  }
+}
+
+// Setup all sliders
+document.addEventListener('DOMContentLoaded', () => {
+  setupSlider('vehicle_age', 'vehicle_age_value', ' years');
+  setupSlider('km_driven', 'km_driven_value', ' km');
+  setupSlider('mileage', 'mileage_value', ' km/l', (v) => v.toFixed(1));
+  setupSlider('engine', 'engine_value', ' cc');
+  setupSlider('max_power', 'max_power_value', ' bhp');
+  setupSlider('seats', 'seats_value', ' seats');
+
+  // Handle brand selection
+  const brandSelect = document.getElementById('brand');
+  const modelSelect = document.getElementById('model');
+  
+  brandSelect.addEventListener('change', (e) => {
+    const brand = e.target.value;
+    if (brand) {
+      populateModels(brand);
+    } else {
+      modelSelect.innerHTML = '<option value="">Select brand first</option>';
+      modelSelect.disabled = true;
+    }
+  });
+
+  // Handle model selection
+  modelSelect.addEventListener('change', (e) => {
+    const brand = brandSelect.value;
+    const model = e.target.value;
+    if (brand && model) {
+      updateSpecsForModel(brand, model);
+    }
+  });
+
+  // Handle brand selection for car 2
+  const brandSelect2 = document.getElementById('brand2');
+  const modelSelect2 = document.getElementById('model2');
+  
+  brandSelect2.addEventListener('change', (e) => {
+    const brand = e.target.value;
+    if (brand) {
+      populateModels2(brand);
+    } else {
+      modelSelect2.innerHTML = '<option value="">Select brand first</option>';
+      modelSelect2.disabled = true;
+    }
+  });
+
+  // Handle model selection for car 2
+  modelSelect2.addEventListener('change', (e) => {
+    const brand = brandSelect2.value;
+    const model = e.target.value;
+    if (brand && model) {
+      updateSpecsForModel2(brand, model);
+    }
+  });
+
+  // Handle comparison mode toggle
+  const comparisonToggle = document.getElementById('comparison-mode');
+  const car2Fields = document.getElementById('car2-fields');
+  const evaluateBtn = document.getElementById('evaluate');
+  const formPanel = document.querySelector('.form-panel');
+
+  comparisonToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      car2Fields.style.display = 'block';
+      evaluateBtn.textContent = 'Compare cars';
+      formPanel.classList.add('comparison-mode');
+      setStatus('Comparison mode enabled. Fill in details for both cars.');
+      
+      // Make car 2 fields required
+      document.getElementById('brand2').required = true;
+      document.getElementById('model2').required = true;
+      document.getElementById('vehicle_age2').required = true;
+      document.getElementById('km_driven2').required = true;
+      document.getElementById('mileage2').required = true;
+      document.getElementById('engine2').required = true;
+      document.getElementById('max_power2').required = true;
+      document.getElementById('seats2').required = true;
+      document.getElementById('fuel_type2').required = true;
+      document.getElementById('seller_type2').required = true;
+      document.getElementById('transmission_type2').required = true;
+      
+      // Setup sliders for car 2
+      setupSlider('vehicle_age2', 'vehicle_age2_value', ' years');
+      setupSlider('km_driven2', 'km_driven2_value', ' km');
+      setupSlider('mileage2', 'mileage2_value', ' km/l', (v) => v.toFixed(1));
+      setupSlider('engine2', 'engine2_value', ' cc');
+      setupSlider('max_power2', 'max_power2_value', ' bhp');
+      setupSlider('seats2', 'seats2_value', ' seats');
+    } else {
+      car2Fields.style.display = 'none';
+      evaluateBtn.textContent = 'Evaluate this car';
+      formPanel.classList.remove('comparison-mode');
+      setStatus('Comparison mode disabled.');
+      
+      // Remove required from car 2 fields
+      document.getElementById('brand2').required = false;
+      document.getElementById('model2').required = false;
+      document.getElementById('vehicle_age2').required = false;
+      document.getElementById('km_driven2').required = false;
+      document.getElementById('mileage2').required = false;
+      document.getElementById('engine2').required = false;
+      document.getElementById('max_power2').required = false;
+      document.getElementById('seats2').required = false;
+      document.getElementById('fuel_type2').required = false;
+      document.getElementById('seller_type2').required = false;
+      document.getElementById('transmission_type2').required = false;
+    }
+  });
+
+  // Detect manual adjustments to auto-filled fields
+  const autoFilledFields = ['engine', 'max_power', 'seats', 'mileage'];
+  autoFilledFields.forEach(fieldId => {
+    const slider = document.getElementById(fieldId);
+    slider.addEventListener('input', () => {
+      markAsManuallyAdjusted(fieldId + '_field');
+    });
+  });
+
+  // Detect manual adjustments for car 2 fields
+  const autoFilledFields2 = ['engine2', 'max_power2', 'seats2', 'mileage2'];
+  autoFilledFields2.forEach(fieldId => {
+    const slider = document.getElementById(fieldId);
+    if (slider) {
+      slider.addEventListener('input', () => {
+        markAsManuallyAdjusted(fieldId + '_field');
+      });
+    }
+  });
+
+  // Add hover effects to form fields
+  const allInputs = document.querySelectorAll('.field input, .field select');
+  allInputs.forEach(input => {
+    input.addEventListener('focus', () => {
+      input.parentElement.classList.add('focused');
+    });
+    input.addEventListener('blur', () => {
+      input.parentElement.classList.remove('focused');
+    });
+  });
+
+  // Add ripple effect to button
+  evaluateBtn.addEventListener('click', function(e) {
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const ripple = document.createElement('span');
+    ripple.style.cssText = `
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      left: ${x}px;
+      top: ${y}px;
+      width: 100px;
+      height: 100px;
+      margin-left: -50px;
+      margin-top: -50px;
+    `;
+    
+    this.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+
+  // Add CSS for ripple animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+});
+
+function setPhoto(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    setStatus('Please choose an image file.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentPhotoDataUrl = e.target.result;
+    photoPreview.src = currentPhotoDataUrl;
+    photoDrop.classList.add('has-photo');
+    photoRemove.hidden = false;
+    setStatus('Car photo added.');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  currentPhotoDataUrl = null;
+  photoPreview.removeAttribute('src');
+  photoInput.value = '';
+  photoDrop.classList.remove('has-photo');
+  photoRemove.hidden = true;
+  setStatus('Car photo removed.');
+}
+
+photoInput.addEventListener('change', (e) => setPhoto(e.target.files[0]));
+photoRemove.addEventListener('click', (ev) => {
+  ev.preventDefault();
+  ev.stopPropagation();
+  clearPhoto();
+});
+
+['dragover', 'dragleave', 'drop'].forEach(evt => {
+  photoDrop.addEventListener(evt, (e) => {
+    e.preventDefault();
+    photoDrop.classList.toggle('dragover', evt === 'dragover');
+  });
+});
+photoDrop.addEventListener('drop', (e) => {
+  if (e.dataTransfer.files[0]) setPhoto(e.dataTransfer.files[0]);
+});
+
+function readForm() {
+  return {
+    brand: document.getElementById('brand').value,
+    model: document.getElementById('model').value,
+    vehicle_age: Number(document.getElementById('vehicle_age').value),
+    km_driven: Number(document.getElementById('km_driven').value),
+    mileage: Number(document.getElementById('mileage').value),
+    engine: Number(document.getElementById('engine').value),
+    max_power: Number(document.getElementById('max_power').value),
+    seats: Number(document.getElementById('seats').value),
+    fuel_type: document.getElementById('fuel_type').value,
+    seller_type: document.getElementById('seller_type').value,
+    transmission_type: document.getElementById('transmission_type').value,
+  };
+}
+
+function readForm2() {
+  return {
+    brand: document.getElementById('brand2').value,
+    model: document.getElementById('model2').value,
+    vehicle_age: Number(document.getElementById('vehicle_age2').value),
+    km_driven: Number(document.getElementById('km_driven2').value),
+    mileage: Number(document.getElementById('mileage2').value),
+    engine: Number(document.getElementById('engine2').value),
+    max_power: Number(document.getElementById('max_power2').value),
+    seats: Number(document.getElementById('seats2').value),
+    fuel_type: document.getElementById('fuel_type2').value,
+    seller_type: document.getElementById('seller_type2').value,
+    transmission_type: document.getElementById('transmission_type2').value,
+  };
+}
+
+// Car models database with specifications
+const carModels = {
+  'Maruti': {
+    'Swift': { engine: 1200, max_power: 89, seats: 5, mileage: 21.5 },
+    'Baleno': { engine: 1200, max_power: 89, seats: 5, mileage: 21.0 },
+    'Dzire': { engine: 1200, max_power: 89, seats: 5, mileage: 22.0 },
+    'WagonR': { engine: 1000, max_power: 67, seats: 5, mileage: 20.5 },
+    'Alto': { engine: 800, max_power: 47, seats: 5, mileage: 22.0 },
+    'Ciaz': { engine: 1500, max_power: 104, seats: 5, mileage: 20.5 },
+    'Ertiga': { engine: 1500, max_power: 103, seats: 7, mileage: 20.0 },
+    'Vitara Brezza': { engine: 1500, max_power: 104, seats: 5, mileage: 18.0 },
+    'XL6': { engine: 1500, max_power: 103, seats: 6, mileage: 19.0 },
+    'S-Cross': { engine: 1500, max_power: 104, seats: 5, mileage: 18.5 },
+  },
+  'Hyundai': {
+    'i20': { engine: 1200, max_power: 88, seats: 5, mileage: 20.0 },
+    'Venue': { engine: 1200, max_power: 83, seats: 5, mileage: 18.5 },
+    'Creta': { engine: 1500, max_power: 115, seats: 5, mileage: 17.0 },
+    'Verna': { engine: 1500, max_power: 115, seats: 5, mileage: 17.5 },
+    'Grand i10': { engine: 1200, max_power: 83, seats: 5, mileage: 19.5 },
+    'Aura': { engine: 1200, max_power: 83, seats: 5, mileage: 20.0 },
+    'Tucson': { engine: 2000, max_power: 156, seats: 5, mileage: 13.5 },
+    'Alcazar': { engine: 2000, max_power: 156, seats: 7, mileage: 14.0 },
+  },
+  'Honda': {
+    'City': { engine: 1500, max_power: 119, seats: 5, mileage: 17.5 },
+    'Amaze': { engine: 1200, max_power: 89, seats: 5, mileage: 18.5 },
+    'Jazz': { engine: 1200, max_power: 89, seats: 5, mileage: 17.0 },
+    'Civic': { engine: 1800, max_power: 140, seats: 5, mileage: 16.5 },
+    'HR-V': { engine: 1500, max_power: 119, seats: 5, mileage: 16.0 },
+    'CR-V': { engine: 2000, max_power: 190, seats: 7, mileage: 14.0 },
+  },
+  'Toyota': {
+    'Innova': { engine: 2500, max_power: 150, seats: 7, mileage: 11.5 },
+    'Fortuner': { engine: 2700, max_power: 166, seats: 7, mileage: 10.0 },
+    'Camry': { engine: 2500, max_power: 178, seats: 5, mileage: 13.5 },
+    'Corolla': { engine: 1800, max_power: 138, seats: 5, mileage: 16.0 },
+    'Glanza': { engine: 1200, max_power: 89, seats: 5, mileage: 21.0 },
+    'Urban Cruiser': { engine: 1500, max_power: 104, seats: 5, mileage: 18.0 },
+  },
+  'Mahindra': {
+    'Thar': { engine: 2000, max_power: 130, seats: 4, mileage: 15.0 },
+    'Scorpio': { engine: 2200, max_power: 140, seats: 7, mileage: 14.0 },
+    'XUV500': { engine: 2200, max_power: 185, seats: 7, mileage: 13.5 },
+    'XUV300': { engine: 1500, max_power: 130, seats: 5, mileage: 17.0 },
+    'Bolero': { engine: 1500, max_power: 75, seats: 7, mileage: 16.0 },
+    'Marazzo': { engine: 1500, max_power: 121, seats: 7, mileage: 17.5 },
+  },
+  'Tata': {
+    'Nexon': { engine: 1200, max_power: 120, seats: 5, mileage: 17.5 },
+    'Harrier': { engine: 2000, max_power: 170, seats: 5, mileage: 15.0 },
+    'Safari': { engine: 2000, max_power: 170, seats: 6, mileage: 14.5 },
+    'Altroz': { engine: 1200, max_power: 110, seats: 5, mileage: 19.0 },
+    'Tiago': { engine: 1200, max_power: 85, seats: 5, mileage: 20.0 },
+    'Punch': { engine: 1200, max_power: 85, seats: 5, mileage: 18.5 },
+    'Indigo': { engine: 1400, max_power: 70, seats: 5, mileage: 18.0 },
+  },
+  'Ford': {
+    'EcoSport': { engine: 1500, max_power: 121, seats: 5, mileage: 15.5 },
+    'Figo': { engine: 1200, max_power: 95, seats: 5, mileage: 18.0 },
+    'Aspire': { engine: 1200, max_power: 95, seats: 5, mileage: 18.5 },
+    'Endeavour': { engine: 2000, max_power: 170, seats: 7, mileage: 12.0 },
+  },
+  'Renault': {
+    'Kwid': { engine: 800, max_power: 54, seats: 5, mileage: 22.0 },
+    'Triber': { engine: 1000, max_power: 71, seats: 7, mileage: 18.5 },
+    'Duster': { engine: 1500, max_power: 106, seats: 5, mileage: 16.5 },
+    'Captur': { engine: 1500, max_power: 156, seats: 5, mileage: 15.0 },
+  },
+  'Volkswagen': {
+    'Polo': { engine: 1000, max_power: 76, seats: 5, mileage: 18.5 },
+    'Vento': { engine: 1000, max_power: 110, seats: 5, mileage: 17.5 },
+    'Taigun': { engine: 1500, max_power: 150, seats: 5, mileage: 18.0 },
+    'Tiguan': { engine: 2000, max_power: 190, seats: 5, mileage: 15.0 },
+  },
+  'Skoda': {
+    'Rapid': { engine: 1000, max_power: 110, seats: 5, mileage: 18.0 },
+    'Slavia': { engine: 1500, max_power: 150, seats: 5, mileage: 18.5 },
+    'Kushaq': { engine: 1500, max_power: 150, seats: 5, mileage: 18.0 },
+    'Octavia': { engine: 2000, max_power: 190, seats: 5, mileage: 15.5 },
+  },
+  'Nissan': {
+    'Magnite': { engine: 1000, max_power: 71, seats: 5, mileage: 18.5 },
+    'Kicks': { engine: 1500, max_power: 115, seats: 5, mileage: 15.0 },
+    'Sunny': { engine: 1500, max_power: 98, seats: 5, mileage: 17.0 },
+  },
+  'Datsun': {
+    'Redi-GO': { engine: 800, max_power: 54, seats: 5, mileage: 22.5 },
+    'GO': { engine: 1200, max_power: 76, seats: 5, mileage: 19.5 },
+    'GO+': { engine: 1200, max_power: 76, seats: 7, mileage: 19.0 },
+  },
+  'Chevrolet': {
+    'Beat': { engine: 1200, max_power: 80, seats: 5, mileage: 18.0 },
+    'Sail': { engine: 1400, max_power: 105, seats: 5, mileage: 18.5 },
+    'Enjoy': { engine: 1500, max_power: 103, seats: 7, mileage: 14.5 },
+  },
+  'BMW': {
+    '3 Series': { engine: 2000, max_power: 255, seats: 5, mileage: 14.5 },
+    '5 Series': { engine: 2000, max_power: 255, seats: 5, mileage: 14.0 },
+    'X1': { engine: 2000, max_power: 190, seats: 5, mileage: 15.0 },
+    'X3': { engine: 2000, max_power: 255, seats: 5, mileage: 13.5 },
+    'X5': { engine: 3000, max_power: 340, seats: 5, mileage: 11.0 },
+  },
+  'Mercedes-Benz': {
+    'C-Class': { engine: 2000, max_power: 204, seats: 5, mileage: 14.5 },
+    'E-Class': { engine: 2000, max_power: 194, seats: 5, mileage: 13.5 },
+    'GLA': { engine: 1500, max_power: 161, seats: 5, mileage: 15.0 },
+    'GLC': { engine: 2000, max_power: 204, seats: 5, mileage: 13.0 },
+    'GLE': { engine: 3000, max_power: 362, seats: 5, mileage: 11.5 },
+  },
+  'Audi': {
+    'A3': { engine: 2000, max_power: 190, seats: 5, mileage: 15.0 },
+    'A4': { engine: 2000, max_power: 190, seats: 5, mileage: 14.5 },
+    'A6': { engine: 2000, max_power: 245, seats: 5, mileage: 14.0 },
+    'Q3': { engine: 2000, max_power: 190, seats: 5, mileage: 15.5 },
+    'Q5': { engine: 2000, max_power: 245, seats: 5, mileage: 13.5 },
+  },
+  'Land Rover': {
+    'Discovery Sport': { engine: 2000, max_power: 247, seats: 7, mileage: 12.0 },
+    'Range Rover Evoque': { engine: 2000, max_power: 247, seats: 5, mileage: 13.0 },
+    'Defender': { engine: 3000, max_power: 300, seats: 7, mileage: 10.0 },
+    'Range Rover': { engine: 3000, max_power: 395, seats: 5, mileage: 9.5 },
+  },
+  'Jaguar': {
+    'XE': { engine: 2000, max_power: 247, seats: 5, mileage: 13.5 },
+    'XF': { engine: 2000, max_power: 247, seats: 5, mileage: 13.0 },
+    'F-Pace': { engine: 2000, max_power: 247, seats: 5, mileage: 12.5 },
+    'I-Pace': { engine: 0, max_power: 394, seats: 5, mileage: 0 },
+  },
+  'Volvo': {
+    'XC40': { engine: 2000, max_power: 190, seats: 5, mileage: 14.5 },
+    'XC60': { engine: 2000, max_power: 235, seats: 5, mileage: 13.5 },
+    'XC90': { engine: 2000, max_power: 235, seats: 7, mileage: 12.5 },
+    'S60': { engine: 2000, max_power: 190, seats: 5, mileage: 14.0 },
+  },
+  'Kia': {
+    'Seltos': { engine: 1500, max_power: 115, seats: 5, mileage: 16.5 },
+    'Sonet': { engine: 1200, max_power: 83, seats: 5, mileage: 18.5 },
+    'Carnival': { engine: 2200, max_power: 200, seats: 7, mileage: 13.5 },
+    'Carens': { engine: 1500, max_power: 115, seats: 7, mileage: 15.5 },
+  },
+  'MG': {
+    'Hector': { engine: 1500, max_power: 143, seats: 5, mileage: 14.0 },
+    'Astor': { engine: 1500, max_power: 110, seats: 5, mileage: 15.0 },
+    'Gloster': { engine: 2000, max_power: 215, seats: 7, mileage: 12.0 },
+    'ZS EV': { engine: 0, max_power: 143, seats: 5, mileage: 0 },
+  },
+  'Jeep': {
+    'Compass': { engine: 2000, max_power: 170, seats: 5, mileage: 14.0 },
+    'Wrangler': { engine: 2000, max_power: 268, seats: 4, mileage: 12.0 },
+    'Meridian': { engine: 2000, max_power: 170, seats: 7, mileage: 13.0 },
+  },
+  'Fiat': {
+    'Punto': { engine: 1200, max_power: 67, seats: 5, mileage: 19.5 },
+    'Linea': { engine: 1400, max_power: 114, seats: 5, mileage: 17.0 },
+    'Urban Cross': { engine: 1400, max_power: 114, seats: 5, mileage: 17.5 },
+  },
+  'Mitsubishi': {
+    'Pajero Sport': { engine: 2500, max_power: 178, seats: 7, mileage: 12.5 },
+    'Outlander': { engine: 2000, max_power: 167, seats: 5, mileage: 14.0 },
+    'Montero': { engine: 3200, max_power: 220, seats: 7, mileage: 10.5 },
+  },
+  'Isuzu': {
+    'D-Max': { engine: 2500, max_power: 163, seats: 5, mileage: 12.0 },
+    'MU-X': { engine: 1900, max_power: 177, seats: 7, mileage: 13.5 },
+  },
+  'Lexus': {
+    'ES': { engine: 2500, max_power: 207, seats: 5, mileage: 13.0 },
+    'NX': { engine: 2500, max_power: 207, seats: 5, mileage: 12.5 },
+    'RX': { engine: 3500, max_power: 292, seats: 5, mileage: 11.5 },
+    'LX': { engine: 5500, max_power: 367, seats: 7, mileage: 8.0 },
+  },
+};
+
+function populateModels(brand) {
+  const modelSelect = document.getElementById('model');
+  const models = carModels[brand];
+  
+  modelSelect.innerHTML = '<option value="">Select model</option>';
+  
+  if (models) {
+    Object.keys(models).sort().forEach(model => {
+      const option = document.createElement('option');
+      option.value = model;
+      option.textContent = model;
+      modelSelect.appendChild(option);
+    });
+    modelSelect.disabled = false;
+    setStatus(`Found ${Object.keys(models).length} models for ${brand}. Select a model to auto-fill specifications.`);
+  } else {
+    modelSelect.innerHTML = '<option value="">No models available</option>';
+    modelSelect.disabled = true;
+  }
+}
+
+function populateModels2(brand) {
+  const modelSelect = document.getElementById('model2');
+  const models = carModels[brand];
+  
+  modelSelect.innerHTML = '<option value="">Select model</option>';
+  
+  if (models) {
+    Object.keys(models).sort().forEach(model => {
+      const option = document.createElement('option');
+      option.value = model;
+      option.textContent = model;
+      modelSelect.appendChild(option);
+    });
+    modelSelect.disabled = false;
+  } else {
+    modelSelect.innerHTML = '<option value="">No models available</option>';
+    modelSelect.disabled = true;
+  }
+}
+
+function updateSpecsForModel(brand, model) {
+  const specs = carModels[brand]?.[model];
+  if (!specs) return;
+
+  // Remove auto-filled indicators from all fields first
+  const allAutoFields = ['engine_field', 'max_power_field', 'seats_field', 'mileage_field'];
+  allAutoFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    field.classList.remove('auto-filled-active');
+  });
+
+  // Update engine
+  const engineSlider = document.getElementById('engine');
+  const engineValue = document.getElementById('engine_value');
+  const engineField = document.getElementById('engine_field');
+  engineSlider.value = specs.engine;
+  engineValue.textContent = specs.engine + ' cc';
+  engineField.classList.add('auto-filled-active');
+
+  // Update max power
+  const powerSlider = document.getElementById('max_power');
+  const powerValue = document.getElementById('max_power_value');
+  const powerField = document.getElementById('max_power_field');
+  powerSlider.value = specs.max_power;
+  powerValue.textContent = specs.max_power + ' bhp';
+  powerField.classList.add('auto-filled-active');
+
+  // Update seats
+  const seatsSlider = document.getElementById('seats');
+  const seatsValue = document.getElementById('seats_value');
+  const seatsField = document.getElementById('seats_field');
+  seatsSlider.value = specs.seats;
+  seatsValue.textContent = specs.seats + ' seats';
+  seatsField.classList.add('auto-filled-active');
+
+  // Update mileage (only if not electric)
+  const mileageSlider = document.getElementById('mileage');
+  const mileageValue = document.getElementById('mileage_value');
+  const mileageField = document.getElementById('mileage_field');
+  const fuelTypeSelect = document.getElementById('fuel_type');
+  
+  if (specs.mileage > 0) {
+    mileageSlider.value = specs.mileage;
+    mileageValue.textContent = specs.mileage + ' km/l';
+    mileageSlider.disabled = false;
+    mileageField.classList.add('auto-filled-active');
+    
+    // Reset fuel type if it was Electric
+    if (fuelTypeSelect.value === 'Electric') {
+      fuelTypeSelect.value = 'Petrol';
+    }
+  } else {
+    // Electric vehicle - set mileage to 0 and disable
+    mileageSlider.value = 0;
+    mileageValue.textContent = 'Electric';
+    mileageSlider.disabled = true;
+    mileageField.classList.remove('auto-filled-active');
+    
+    // Set fuel type to Electric
+    fuelTypeSelect.value = 'Electric';
+  }
+
+  // Add visual feedback
+  const updatedFields = ['engine', 'max_power', 'seats', 'mileage'];
+  updatedFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    field.style.transition = 'background 0.3s ease, border-color 0.3s ease';
+    field.style.background = 'rgba(242, 169, 59, 0.1)';
+    field.style.borderColor = 'var(--amber)';
+    
+    setTimeout(() => {
+      field.style.background = '';
+      field.style.borderColor = '';
+    }, 800);
+  });
+
+  setStatus(`Specifications auto-filled for ${brand} ${model}. You can still adjust them if needed.`);
+}
+
+function updateSpecsForModel2(brand, model) {
+  const specs = carModels[brand]?.[model];
+  if (!specs) return;
+
+  // Remove auto-filled indicators from all fields first
+  const allAutoFields = ['engine_field2', 'max_power_field2', 'seats_field2', 'mileage_field2'];
+  allAutoFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    field.classList.remove('auto-filled-active');
+  });
+
+  // Update engine
+  const engineSlider = document.getElementById('engine2');
+  const engineValue = document.getElementById('engine2_value');
+  const engineField = document.getElementById('engine_field2');
+  engineSlider.value = specs.engine;
+  engineValue.textContent = specs.engine + ' cc';
+  engineField.classList.add('auto-filled-active');
+
+  // Update max power
+  const powerSlider = document.getElementById('max_power2');
+  const powerValue = document.getElementById('max_power2_value');
+  const powerField = document.getElementById('max_power_field2');
+  powerSlider.value = specs.max_power;
+  powerValue.textContent = specs.max_power + ' bhp';
+  powerField.classList.add('auto-filled-active');
+
+  // Update seats
+  const seatsSlider = document.getElementById('seats2');
+  const seatsValue = document.getElementById('seats2_value');
+  const seatsField = document.getElementById('seats_field2');
+  seatsSlider.value = specs.seats;
+  seatsValue.textContent = specs.seats + ' seats';
+  seatsField.classList.add('auto-filled-active');
+
+  // Update mileage (only if not electric)
+  const mileageSlider = document.getElementById('mileage2');
+  const mileageValue = document.getElementById('mileage2_value');
+  const mileageField = document.getElementById('mileage_field2');
+  const fuelTypeSelect = document.getElementById('fuel_type2');
+  
+  if (specs.mileage > 0) {
+    mileageSlider.value = specs.mileage;
+    mileageValue.textContent = specs.mileage + ' km/l';
+    mileageSlider.disabled = false;
+    mileageField.classList.add('auto-filled-active');
+    
+    // Reset fuel type if it was Electric
+    if (fuelTypeSelect.value === 'Electric') {
+      fuelTypeSelect.value = 'Petrol';
+    }
+  } else {
+    // Electric vehicle - set mileage to 0 and disable
+    mileageSlider.value = 0;
+    mileageValue.textContent = 'Electric';
+    mileageSlider.disabled = true;
+    mileageField.classList.remove('auto-filled-active');
+    
+    // Set fuel type to Electric
+    fuelTypeSelect.value = 'Electric';
+  }
+
+  // Add visual feedback
+  const updatedFields = ['engine2', 'max_power2', 'seats2', 'mileage2'];
+  updatedFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    field.style.transition = 'background 0.3s ease, border-color 0.3s ease';
+    field.style.background = 'rgba(242, 169, 59, 0.1)';
+    field.style.borderColor = 'var(--amber)';
+    
+    setTimeout(() => {
+      field.style.background = '';
+      field.style.borderColor = '';
+    }, 800);
+  });
+}
+
+// Remove auto-fill indicator when user manually adjusts fields
+function markAsManuallyAdjusted(fieldId) {
+  const field = document.getElementById(fieldId);
+  if (field) {
+    field.classList.remove('auto-filled-active');
+    setStatus('Custom specification applied.');
+  }
+}
+
+// Animated counter for displaying values
+function animateValue(element, start, end, duration, formatter = null) {
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Easing function for smooth animation
+    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+    const current = start + (end - start) * easeOutQuart;
+    
+    element.textContent = formatter ? formatter(current) : Math.round(current).toLocaleString('en-IN');
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+function formatINR(n) {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function callAPI(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('Request to ' + path + ' failed (' + res.status + ')');
+  return res.json();
+}
+
+function drawDepreciationChart(canvas, points) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 600;
+  const h = 280;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const padL = 78, padR = 16, padT = 16, padB = 32;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  const prices = points.map(p => p.predicted_price);
+  const maxP = Math.max(...prices);
+  const minP = Math.min(...prices);
+  const range = (maxP - minP) || 1;
+
+  ctx.strokeStyle = '#33373d';
+  ctx.lineWidth = 1;
+  ctx.font = '11px JetBrains Mono, monospace';
+  ctx.fillStyle = '#8b8f96';
+  for (let i = 0; i <= 3; i++) {
+    const y = padT + (plotH * i / 3);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    const val = maxP - (range * i / 3);
+    ctx.fillText(formatINR(val), 4, y + 4);
+  }
+
+  const coords = points.map((p, i) => ({
+    x: padL + (plotW * i / Math.max(points.length - 1, 1)),
+    y: padT + plotH - ((p.predicted_price - minP) / range * plotH),
+    data: p
+  }));
+
+  const gradient = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+  gradient.addColorStop(0, 'rgba(242, 169, 59, 0.28)');
+  gradient.addColorStop(1, 'rgba(242, 169, 59, 0)');
+  ctx.beginPath();
+  coords.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+  ctx.lineTo(coords[coords.length - 1].x, padT + plotH);
+  ctx.lineTo(coords[0].x, padT + plotH);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  ctx.strokeStyle = '#f2a93b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  coords.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+  ctx.stroke();
+
+  ctx.fillStyle = '#f2a93b';
+  coords.forEach((c) => {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#8b8f96';
+  ctx.textAlign = 'center';
+  points.forEach((p, i) => {
+    if (i % 2 === 0 || i === points.length - 1) {
+      ctx.fillText(p.year + 'y', coords[i].x, h - 10);
+    }
+  });
+  ctx.textAlign = 'left';
+
+  // Add interactive tooltip
+  let tooltip = canvas.parentElement.querySelector('.chart-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.className = 'chart-tooltip';
+    canvas.parentElement.appendChild(tooltip);
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Find closest point
+    let closestPoint = null;
+    let minDist = Infinity;
+
+    coords.forEach((coord) => {
+      const dist = Math.abs(mouseX - coord.x);
+      if (dist < minDist && dist < 30) {
+        minDist = dist;
+        closestPoint = coord;
+      }
+    });
+
+    if (closestPoint) {
+      tooltip.innerHTML = `
+        <strong>${closestPoint.data.year} year${closestPoint.data.year === 1 ? '' : 's'}</strong><br>
+        ${formatINR(closestPoint.data.predicted_price)}
+      `;
+      tooltip.style.left = (closestPoint.x + 12) + 'px';
+      tooltip.style.top = (closestPoint.y - 40) + 'px';
+      tooltip.classList.add('visible');
+
+      // Highlight the point
+      ctx.clearRect(0, 0, w, h);
+      
+      // Redraw everything
+      ctx.strokeStyle = '#33373d';
+      ctx.lineWidth = 1;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillStyle = '#8b8f96';
+      for (let i = 0; i <= 3; i++) {
+        const y = padT + (plotH * i / 3);
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(w - padR, y);
+        ctx.stroke();
+        const val = maxP - (range * i / 3);
+        ctx.fillText(formatINR(val), 4, y + 4);
+      }
+
+      ctx.beginPath();
+      coords.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+      ctx.lineTo(coords[coords.length - 1].x, padT + plotH);
+      ctx.lineTo(coords[0].x, padT + plotH);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.strokeStyle = '#f2a93b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      coords.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+      ctx.stroke();
+
+      // Draw all points
+      ctx.fillStyle = '#f2a93b';
+      coords.forEach((c) => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Highlight closest point
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(closestPoint.x, closestPoint.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f2a93b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#8b8f96';
+      ctx.textAlign = 'center';
+      points.forEach((p, i) => {
+        if (i % 2 === 0 || i === points.length - 1) {
+          ctx.fillText(p.year + 'y', coords[i].x, h - 10);
+        }
+      });
+      ctx.textAlign = 'left';
+    } else {
+      tooltip.classList.remove('visible');
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('visible');
+    // Redraw chart without highlight
+    ctx.clearRect(0, 0, w, h);
+    
+    ctx.strokeStyle = '#33373d';
+    ctx.lineWidth = 1;
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillStyle = '#8b8f96';
+    for (let i = 0; i <= 3; i++) {
+      const y = padT + (plotH * i / 3);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+      const val = maxP - (range * i / 3);
+      ctx.fillText(formatINR(val), 4, y + 4);
+    }
+
+    ctx.beginPath();
+    coords.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+    ctx.lineTo(coords[coords.length - 1].x, padT + plotH);
+    ctx.lineTo(coords[0].x, padT + plotH);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.strokeStyle = '#f2a93b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    coords.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+    ctx.stroke();
+
+    ctx.fillStyle = '#f2a93b';
+    coords.forEach((c) => {
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = '#8b8f96';
+    ctx.textAlign = 'center';
+    points.forEach((p, i) => {
+      if (i % 2 === 0 || i === points.length - 1) {
+        ctx.fillText(p.year + 'y', coords[i].x, h - 10);
+      }
+    });
+    ctx.textAlign = 'left';
+  });
+}
+
+const CAR_SILHOUETTE_SVG = `
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M6 40h4l4-10a4 4 0 0 1 3.6-2.3h28.8A4 4 0 0 1 50 30l4 10h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4a6 6 0 0 1-12 0H22a6 6 0 0 1-12 0H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z"
+      stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="16" cy="48" r="3" stroke="currentColor" stroke-width="2"/>
+    <circle cx="46" cy="48" r="3" stroke="currentColor" stroke-width="2"/>
+    <path d="M17 28l2-6a2 2 0 0 1 1.9-1.4h22.2a2 2 0 0 1 1.9 1.4l2 6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </svg>`;
+
+function drawGauge(prediction, range) {
+  const gaugeMax = Math.max(range.upper * 1.15, prediction.predicted_price * 1.15);
+  const fraction = Math.min(Math.max(prediction.predicted_price / gaugeMax, 0), 1);
+
+  const arcLength = 282.7;
+  const offset = arcLength * (1 - fraction);
+  const needleAngle = (fraction - 0.5) * 180;
+
+  const fill = document.getElementById('gauge-fill');
+  const needle = document.getElementById('gauge-needle');
+  requestAnimationFrame(() => {
+    fill.style.strokeDashoffset = offset;
+    needle.style.transform = `rotate(${needleAngle}deg)`;
+  });
+}
+
+function renderLoading() {
+  resultsEl.innerHTML = `
+    <div class="results-loading" aria-hidden="true">
+      <div class="skeleton">
+        <div class="skel skel-row"></div>
+        <div class="skel skel-gauge"></div>
+        <div class="skel skel-bar"></div>
+        <div class="skel skel-chart"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderError(err) {
+  resultsEl.innerHTML = `
+    <div class="error-box" role="alert">
+      <div class="error-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 8v5M12 16h.01"/>
+        </svg>
+      </div>
+      <h2 id="results-heading">Couldn't reach the prediction server</h2>
+      <p>Make sure <span class="mono">app.py</span> is running on port 5000, then try again.</p>
+      <p class="error-detail mono">${escapeHtml(err.message)}</p>
+      <button type="button" class="retry-btn" id="retry-evaluate">Try again</button>
+    </div>
+  `;
+  document.getElementById('retry-evaluate').addEventListener('click', () => form.requestSubmit());
+}
+
+function renderResults(prediction, range, depreciation, featureImportance, carMeta, photoDataUrl) {
+  const span = range.upper - range.lower;
+  const meanPct = span > 0
+    ? Math.min(100, Math.max(0, ((range.mean - range.lower) / span) * 100))
+    : 50;
+
+  const photoHtml = photoDataUrl
+    ? `<img src="${photoDataUrl}" alt="Uploaded photo of the ${escapeHtml(carMeta.brand)} ${escapeHtml(carMeta.model)}">`
+    : CAR_SILHOUETTE_SVG;
+
+  const tableRows = depreciation.map(p =>
+    `<tr><td>${p.year} year${p.year === 1 ? '' : 's'}</td><td class="mono">${formatINR(p.predicted_price)}</td></tr>`
+  ).join('');
+
+  resultsEl.innerHTML = `
+    <p class="panel-kicker">Report</p>
+    <h2 class="panel-heading" id="results-heading">Valuation</h2>
+
+    <div class="car-profile">
+      <div class="car-profile-photo">
+        ${photoHtml}
+      </div>
+      <div>
+        <div class="car-profile-title">${escapeHtml(carMeta.brand)} ${escapeHtml(carMeta.model)} · ${carMeta.vehicle_age} yr old</div>
+        <div class="car-profile-specs">${escapeHtml(carMeta.fuel_type)} · ${escapeHtml(carMeta.transmission_type)} · ${carMeta.km_driven.toLocaleString('en-IN')} km · ${escapeHtml(carMeta.seller_type)}</div>
+      </div>
+      <div class="report-actions">
+        <button id="download-report" type="button">Download report</button>
+      </div>
+    </div>
+
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="0 0 200 115" role="img" aria-label="Estimated market value ${formatINR(prediction.predicted_price)}">
+        <defs>
+          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#d9645c"/>
+            <stop offset="50%" stop-color="#f2a93b"/>
+            <stop offset="100%" stop-color="#4fb286"/>
+          </linearGradient>
+        </defs>
+        <path d="M15,105 A90,90 0 0 1 185,105" stroke="#22262c" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path id="gauge-fill" class="gauge-fill" d="M15,105 A90,90 0 0 1 185,105" stroke="url(#gaugeGradient)" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="282.7"/>
+        <g class="gauge-needle" id="gauge-needle">
+          <line x1="100" y1="105" x2="100" y2="28" stroke="#e8e6e1" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <circle cx="100" cy="105" r="6" fill="#e8e6e1"/>
+      </svg>
+      <div>
+        <div class="gauge-label" id="value-label">Estimated market value</div>
+        <div class="gauge-value mono" aria-labelledby="value-label">${formatINR(prediction.predicted_price)}</div>
+        <p class="gauge-note">Midpoint of a ${formatINR(range.lower)} – ${formatINR(range.upper)} likely range.</p>
+      </div>
+    </div>
+
+    <div class="range-block">
+      <div class="section-title" id="range-title">Likely price range</div>
+      <div class="range-labels mono" aria-labelledby="range-title">
+        <span class="lower">Low ${formatINR(range.lower)}</span>
+        <span>Typical ${formatINR(range.mean)}</span>
+        <span class="upper">High ${formatINR(range.upper)}</span>
+      </div>
+      <div class="range-bar" role="img" aria-label="Typical price sits ${Math.round(meanPct)} percent of the way from low to high">
+        <div class="range-fill"></div>
+        <div class="range-marker" style="left:${meanPct}%;"></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="section-title">Depreciation over 10 years</div>
+        <div class="chart-wrap">
+          <canvas id="depreciation-canvas" aria-hidden="true"></canvas>
+        </div>
+        <details class="chart-data">
+          <summary>View year-by-year values</summary>
+          <table class="data-table">
+            <thead><tr><th>Age</th><th>Estimated value</th></tr></thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </details>
+      </div>
+      <div>
+        <div class="section-title" id="importance-title">What drives this price</div>
+        <div id="importance-list" role="list" aria-labelledby="importance-title"></div>
+      </div>
+    </div>
+  `;
+
+  drawDepreciationChart(document.getElementById('depreciation-canvas'), depreciation);
+  drawGauge(prediction, range);
+
+  const importanceList = document.getElementById('importance-list');
+  const maxImp = Math.max(...featureImportance.map(f => f.importance), 0.0001);
+  importanceList.innerHTML = featureImportance.map(f => `
+    <div class="importance-row" role="listitem">
+      <div class="importance-name">${escapeHtml(f.label)}</div>
+      <div class="importance-track" aria-hidden="true">
+        <div class="importance-fill" style="width:${(f.importance / maxImp * 100).toFixed(0)}%"></div>
+      </div>
+      <div class="importance-pct mono">${(f.importance * 100).toFixed(0)}%</div>
+    </div>
+  `).join('');
+
+  requestAnimationFrame(() => {
+    importanceList.querySelectorAll('.importance-fill').forEach((el) => {
+      const width = el.style.width;
+      el.style.width = '0';
+      requestAnimationFrame(() => { el.style.width = width; });
+    });
+  });
+
+  document.getElementById('download-report').addEventListener('click', () => window.print());
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderComparisonResults(car1Data, car1Prediction, car1Range, car2Data, car2Prediction, car2Range) {
+  const car1Value = car1Prediction.predicted_price;
+  const car2Value = car2Prediction.predicted_price;
+  
+  // Calculate which car is better value
+  const priceDiff = car2Value - car1Value;
+  const car1Better = priceDiff > 0; // Car 1 is cheaper, so better value
+  
+  // Calculate value for money (price / age ratio)
+  const car1ValueRatio = car1Value / (car1Data.vehicle_age || 1);
+  const car2ValueRatio = car2Value / (car2Data.vehicle_age || 1);
+  
+  // Calculate efficiency score (mileage * seats / age)
+  const car1Efficiency = (car1Data.mileage * car1Data.seats) / (car1Data.vehicle_age || 1);
+  const car2Efficiency = (car2Data.mileage * car2Data.seats) / (car2Data.vehicle_age || 1);
+  
+  // Overall recommendation
+  let winner = car1Better ? 'Car 1' : 'Car 2';
+  let reason = '';
+  
+  if (car1Better) {
+    reason = `${formatINR(Math.abs(priceDiff))} cheaper with better age-adjusted value`;
+  } else {
+    reason = `${formatINR(Math.abs(priceDiff))} cheaper with better age-adjusted value`;
+  }
+  
+  // Check for other factors
+  if (car1Efficiency > car2Efficiency * 1.2) {
+    winner = 'Car 1';
+    reason = 'Significantly better efficiency and value for money';
+  } else if (car2Efficiency > car1Efficiency * 1.2) {
+    winner = 'Car 2';
+    reason = 'Significantly better efficiency and value for money';
+  }
+
+  resultsEl.innerHTML = `
+    <p class="panel-kicker">Comparison</p>
+    <h2 class="panel-heading" id="results-heading">Car Comparison Results</h2>
+
+    <div class="comparison-summary">
+      <div class="winner-badge">🏆 Recommended: ${winner}</div>
+      <div class="recommendation">${winner} is the better choice</div>
+      <div class="recommendation-reason">${reason}</div>
+    </div>
+
+    <div class="comparison-results">
+      <div>
+        <div class="car-label">Car 1: ${escapeHtml(car1Data.brand)} ${escapeHtml(car1Data.model)}</div>
+        <div class="comparison-metric">
+          <span class="label">Estimated Value</span>
+          <span class="value ${car1Better ? 'better' : 'worse'}">${formatINR(car1Value)}</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Price Range</span>
+          <span class="value">${formatINR(car1Range.lower)} - ${formatINR(car1Range.upper)}</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Age</span>
+          <span class="value">${car1Data.vehicle_age} years</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Km Driven</span>
+          <span class="value">${car1Data.km_driven.toLocaleString('en-IN')} km</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Mileage</span>
+          <span class="value">${car1Data.mileage} km/l</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Engine</span>
+          <span class="value">${car1Data.engine} cc</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Power</span>
+          <span class="value">${car1Data.max_power} bhp</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Value/Age Ratio</span>
+          <span class="value ${car1ValueRatio > car2ValueRatio ? 'better' : 'worse'}">${formatINR(car1ValueRatio)}/yr</span>
+        </div>
+      </div>
+      
+      <div>
+        <div class="car-label">Car 2: ${escapeHtml(car2Data.brand)} ${escapeHtml(car2Data.model)}</div>
+        <div class="comparison-metric">
+          <span class="label">Estimated Value</span>
+          <span class="value ${!car1Better ? 'better' : 'worse'}">${formatINR(car2Value)}</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Price Range</span>
+          <span class="value">${formatINR(car2Range.lower)} - ${formatINR(car2Range.upper)}</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Age</span>
+          <span class="value">${car2Data.vehicle_age} years</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Km Driven</span>
+          <span class="value">${car2Data.km_driven.toLocaleString('en-IN')} km</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Mileage</span>
+          <span class="value">${car2Data.mileage} km/l</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Engine</span>
+          <span class="value">${car2Data.engine} cc</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Power</span>
+          <span class="value">${car2Data.max_power} bhp</span>
+        </div>
+        <div class="comparison-metric">
+          <span class="label">Value/Age Ratio</span>
+          <span class="value ${car2ValueRatio > car1ValueRatio ? 'better' : 'worse'}">${formatINR(car2ValueRatio)}/yr</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison-summary">
+      <div class="recommendation">Price Difference</div>
+      <div class="recommendation-reason">
+        ${car1Better ? 'Car 1' : 'Car 2'} is ${formatINR(Math.abs(priceDiff))} ${car1Better ? 'less' : 'more'} expensive than ${car1Better ? 'Car 2' : 'Car 1'}.
+        ${Math.abs(priceDiff) > 100000 ? ' This is a significant price difference.' : ' The price difference is relatively small.'}
+      </div>
+    </div>
+  `;
+
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  form.classList.add('was-submitted');
+
+  const isComparisonMode = document.getElementById('comparison-mode').checked;
+
+  // Custom validation based on mode
+  let hasValidationErrors = false;
+  
+  // Always validate car 1 fields
+  const car1RequiredFields = ['brand', 'model', 'vehicle_age', 'km_driven', 'mileage', 'engine', 'max_power', 'seats', 'fuel_type', 'seller_type', 'transmission_type'];
+  for (const fieldId of car1RequiredFields) {
+    const field = document.getElementById(fieldId);
+    if (field && !field.value) {
+      hasValidationErrors = true;
+      field.focus();
+      setStatus('Please fill in all required fields for Car 1.');
+      form.style.animation = 'shake 0.5s ease';
+      setTimeout(() => form.style.animation = '', 500);
+      return;
+    }
+  }
+  
+  // Only validate car 2 fields in comparison mode
+  if (isComparisonMode) {
+    const car2RequiredFields = ['brand2', 'model2', 'vehicle_age2', 'km_driven2', 'mileage2', 'engine2', 'max_power2', 'seats2', 'fuel_type2', 'seller_type2', 'transmission_type2'];
+    for (const fieldId of car2RequiredFields) {
+      const field = document.getElementById(fieldId);
+      if (field && !field.value) {
+        hasValidationErrors = true;
+        field.focus();
+        setStatus('Please fill in all required fields for Car 2.');
+        form.style.animation = 'shake 0.5s ease';
+        setTimeout(() => form.style.animation = '', 500);
+        return;
+      }
+    }
+  }
+
+  // Ensure model is selected for car 1
+  const modelValue = document.getElementById('model').value;
+  if (!modelValue) {
+    setStatus('Please select a car model for Car 1.');
+    document.getElementById('model').focus();
+    form.style.animation = 'shake 0.5s ease';
+    setTimeout(() => form.style.animation = '', 500);
+    return;
+  }
+
+  // If comparison mode, ensure model is selected for car 2
+  if (isComparisonMode) {
+    const modelValue2 = document.getElementById('model2').value;
+    if (!modelValue2) {
+      setStatus('Please select a car model for Car 2.');
+      document.getElementById('model2').focus();
+      form.style.animation = 'shake 0.5s ease';
+      setTimeout(() => form.style.animation = '', 500);
+      return;
+    }
+  }
+
+  const data = readForm();
+  const originalEvaluateText = isComparisonMode ? 'Compare cars' : 'Evaluate this car';
+
+  evaluateBtn.disabled = true;
+  evaluateBtn.setAttribute('aria-busy', 'true');
+  
+  // Progress animation
+  const dots = ['.', '..', '...'];
+  let i = 0;
+  evaluateBtn.textContent = 'Evaluating' + dots[0];
+  const progressInterval = setInterval(() => {
+    i = (i + 1) % dots.length;
+    evaluateBtn.textContent = 'Evaluating' + dots[i];
+  }, 500);
+  
+  renderLoading();
+  setStatus(isComparisonMode ? 'Comparing both cars...' : 'Getting your estimate.');
+
+  try {
+    if (isComparisonMode) {
+      const data2 = readForm2();
+      
+      const [prediction1, range1, prediction2, range2] = await Promise.all([
+        callAPI('/predict', data),
+        callAPI('/price-range', data),
+        callAPI('/predict', data2),
+        callAPI('/price-range', data2),
+      ]);
+
+      renderComparisonResults(data, prediction1, range1, data2, prediction2, range2);
+      setStatus('Comparison complete. Review the results above.');
+    } else {
+      const [prediction, range, depreciation] = await Promise.all([
+        callAPI('/predict', data),
+        callAPI('/price-range', data),
+        callAPI('/depreciation', data),
+      ]);
+
+      const featureImportance = [
+        { label: 'Max power', importance: 0.32 },
+        { label: 'Vehicle age', importance: 0.22 },
+        { label: 'Engine', importance: 0.14 },
+        { label: 'Km driven', importance: 0.10 },
+        { label: 'Mileage', importance: 0.08 },
+      ];
+
+      renderResults(prediction, range, depreciation, featureImportance, data, currentPhotoDataUrl);
+      setStatus('Valuation ready. Estimated value ' + formatINR(prediction.predicted_price) + '.');
+    }
+  } catch (err) {
+    renderError(err);
+    setStatus("Couldn't reach the prediction server.");
+  } finally {
+    clearInterval(progressInterval);
+    evaluateBtn.disabled = false;
+    evaluateBtn.removeAttribute('aria-busy');
+    evaluateBtn.textContent = originalEvaluateText;
+  }
+});
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd + Enter to submit form
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    if (!evaluateBtn.disabled) {
+      form.requestSubmit();
+    }
+  }
+  
+  // Escape to clear photo
+  if (e.key === 'Escape' && currentPhotoDataUrl) {
+    clearPhoto();
+  }
+});
+
+// Add shake animation
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = `
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+`;
+document.head.appendChild(shakeStyle);
+</script>
+
+</body>
+</html>
