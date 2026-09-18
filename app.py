@@ -13,29 +13,44 @@ with open('columns.json') as f:
     columns = json.load(f)['data_columns']
 
 def build_input_row(data):
-    row = pd.Series(0, index=columns)
-    row['vehicle_age'] = data['vehicle_age']
-    row['km_driven'] = data['km_driven']
-    row['mileage'] = data['mileage']
-    row['engine'] = data['engine']
-    row['max_power'] = data['max_power']
-    row['seats'] = data['seats']
+    row = pd.Series(0.0, index=columns, dtype=float)
 
-    brand_col = f"brand_{data['brand']}"
-    if brand_col in columns:
-        row[brand_col] = 1
+    # Safe numeric assignments with fallback defaults
+    for num_field, default_val in [
+        ('vehicle_age', 5),
+        ('km_driven', 40000),
+        ('mileage', 18.0),
+        ('engine', 1200),
+        ('max_power', 85.0),
+        ('seats', 5)
+    ]:
+        val = data.get(num_field, default_val)
+        try:
+            row[num_field] = float(val) if val is not None else float(default_val)
+        except (ValueError, TypeError):
+            row[num_field] = float(default_val)
 
-    fuel_col = f"fuel_type_{data['fuel_type']}"
-    if fuel_col in columns:
-        row[fuel_col] = 1
+    # Extract categorical inputs safely, supporting multiple possible key names
+    brand = str(data.get('brand', '')).strip()
+    fuel = str(data.get('fuel_type', data.get('fuel', ''))).strip()
+    seller = str(data.get('seller_type', data.get('seller', ''))).strip()
+    trans = str(data.get('transmission_type', data.get('transmission', ''))).strip()
 
-    seller_col = f"seller_type_{data['seller_type']}"
-    if seller_col in columns:
-        row[seller_col] = 1
+    # Case-insensitive column matching
+    cols_lookup = {c.lower(): c for c in columns}
 
-    trans_col = f"transmission_type_{data['transmission_type']}"
-    if trans_col in columns:
-        row[trans_col] = 1
+    for prefix, val in [
+        ('brand_', brand),
+        ('fuel_type_', fuel),
+        ('seller_type_', seller),
+        ('transmission_type_', trans),
+        ('transmission_', trans),
+        ('model_', str(data.get('model', '')).strip())
+    ]:
+        if val:
+            candidate = f"{prefix}{val}".lower()
+            if candidate in cols_lookup:
+                row[cols_lookup[candidate]] = 1.0
 
     return row
 
